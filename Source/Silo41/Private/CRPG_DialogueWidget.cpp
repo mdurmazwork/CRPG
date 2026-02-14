@@ -1,5 +1,4 @@
 #include "CRPG_DialogueWidget.h"
-#include "TimerManager.h"
 #include "Components/TextBlock.h"
 #include "Components/ScrollBoxSlot.h" 
 #include "CRPG_HUD.h"
@@ -79,7 +78,7 @@ void UCRPG_DialogueWidget::PushToHistory(const FString& FullMessage, bool bIsPla
 
 	if (HistoryLine)
 	{
-		// Metni ayarla (Zaten formatlanmýþ geliyor)
+		// Metni ayarla
 		HistoryLine->SetText(FText::FromString(FullMessage));
 
 		// Stil Ayarlarý
@@ -96,9 +95,6 @@ void UCRPG_DialogueWidget::PushToHistory(const FString& FullMessage, bool bIsPla
 		{
 			// Satýr aralarýna boþluk
 			ScrollSlot->SetPadding(FMargin(0.0f, 0.0f, 0.0f, 15.0f));
-
-			// ÖNEMLÝ: History'deki yazýlarýn saða/sola yaslanmasý burada ayarlanabilir.
-			// Þimdilik hepsi sola yaslý.
 			ScrollSlot->SetHorizontalAlignment(HAlign_Fill);
 		}
 
@@ -136,70 +132,34 @@ void UCRPG_DialogueWidget::ShowNode(int32 NodeID)
 
 	CurrentNodeID = NodeID;
 
-	// [YENÝ MANTIK] Ýsim ve Metni Birleþtir
+	// Ýsim ve Metni Birleþtir
 	FString Speaker = Node->SpeakerName.ToString().ToUpper();
 	if (Speaker.IsEmpty()) Speaker = TEXT("UNKNOWN");
 
 	// Format: "MARCUS: Buradan çýkmamýz lazým."
 	FullText = FString::Printf(TEXT("%s: %s"), *Speaker, *Node->Text.ToString());
 
-	CurrentCharIndex = 0;
-
+	// [INSTANT TEXT MANTIÐI]
+	// Daktilo efekti yok, doðrudan metni basýyoruz.
 	if (Txt_DialogueBody)
 	{
-		Txt_DialogueBody->SetText(FText::GetEmpty());
+		Txt_DialogueBody->SetText(FText::FromString(FullText));
 		Txt_DialogueBody->SetColorAndOpacity(ActiveTextColor);
 	}
 
+	// Þýklar hemen gösterilir
 	if (OptionList) OptionList->ClearChildren();
+	ShowOptions(Node->PlayerOptions);
 
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_Typewriter, this, &UCRPG_DialogueWidget::OnTypewriterTick, TypewriterSpeed, true);
-}
-
-void UCRPG_DialogueWidget::OnTypewriterTick()
-{
-	if (!Txt_DialogueBody)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Typewriter);
-		return;
-	}
-
-	CurrentCharIndex++;
-
-	// Daktilo efekti
-	FString SubString = FullText.Left(CurrentCharIndex);
-	Txt_DialogueBody->SetText(FText::FromString(SubString));
-
-	// ScrollBox'ý sürekli aþaðý it ki yazý akarken görünür kalsýn
+	// Scroll'u güncelle
 	if (Scroll_History) Scroll_History->ScrollToEnd();
-
-	if (CurrentCharIndex >= FullText.Len())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Typewriter);
-
-		if (CurrentDialogueData)
-		{
-			FDialogueNode* Node = CurrentDialogueData->GetNodeByID(CurrentNodeID);
-			if (Node) ShowOptions(Node->PlayerOptions);
-		}
-	}
 }
 
 void UCRPG_DialogueWidget::OnNextClicked()
 {
-	if (GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_Typewriter))
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Typewriter);
-		if (Txt_DialogueBody) Txt_DialogueBody->SetText(FText::FromString(FullText));
-
-		if (CurrentDialogueData)
-		{
-			FDialogueNode* Node = CurrentDialogueData->GetNodeByID(CurrentNodeID);
-			if (Node) ShowOptions(Node->PlayerOptions);
-		}
-
-		if (Scroll_History) Scroll_History->ScrollToEnd();
-	}
+	// Metin artýk anýnda geldiði için bu butonun "Hýzlandýrma" iþlevi kalmadý.
+	// Ancak yine de scroll'u aþaðý itmek için tutabiliriz.
+	if (Scroll_History) Scroll_History->ScrollToEnd();
 }
 
 void UCRPG_DialogueWidget::ShowOptions(const TArray<FDialogueOption>& Options)

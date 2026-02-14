@@ -53,8 +53,8 @@ private:
 
 /**
  * UCRPG_DialogueWidget
- * * GELÝÞMÝÞ DÝYALOG SÝSTEMÝ (DISCO ELYSIUM STYLE)
- * Özellikler: Akan Tarihçe (History), Satýr Ýçi Ýsimler, Resume
+ * * GELÝÞMÝÞ DÝYALOG SÝSTEMÝ (INSTANT TEXT)
+ * Özellikler: Daktilo efekti kapatýldý. Metinler anýnda belirir.
  */
 UCLASS()
 class SILO41_API UCRPG_DialogueWidget : public UUserWidget
@@ -67,8 +67,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	TSubclassOf<UCRPG_OptionButton> OptionButtonClass;
 
+	// [DEVRE DIÞI] Daktilo efekti hýzý (Artýk kullanýlmýyor)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
-	float TypewriterSpeed = 0.02f;
+	float TypewriterSpeed = 0.0f;
 
 	// Geçmiþ konuþmalarýn rengi
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
@@ -84,8 +85,6 @@ public:
 
 	// --- BINDINGS ---
 
-	// [DEÐÝÞÝKLÝK] Txt_SpeakerName kaldýrýldý. Ýsim artýk metnin içinde.
-
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_DialogueBody;  // Aktif Metin (Ýsim dahil)
 
@@ -96,7 +95,7 @@ public:
 	UVerticalBox* OptionList;      // Cevaplar
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Next;             // Hýzlý Geçiþ
+	UButton* Btn_Next;             // Hýzlý Geçiþ (Artýk opsiyonel)
 
 	// --- LOGIC ---
 
@@ -117,14 +116,11 @@ private:
 
 	int32 CurrentNodeID;
 	FString FullText; // Ýsim + Metin birleþmiþ hali
-	int32 CurrentCharIndex;
-	FTimerHandle TimerHandle_Typewriter;
 
 	// Son konuþulanlarý hafýzaya atar
 	void PushToHistory(const FString& FullMessage, bool bIsPlayer = false);
 
 	void ShowNode(int32 NodeID);
-	void OnTypewriterTick();
 	void ShowOptions(const TArray<FDialogueOption>& Options);
 
 	UFUNCTION()
