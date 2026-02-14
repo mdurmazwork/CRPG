@@ -4,8 +4,9 @@
 #include "GameFramework/Character.h"
 #include "CRPG_MutationData.h" 
 #include "CRPG_AttributeComponent.h" 
-#include "CRPG_InventoryComponent.h" // YENÝ: Envanter Eriþimi
+#include "CRPG_InventoryComponent.h"
 #include "Components/SphereComponent.h"
+#include "CRPG_DialogueData.h" // YENÝ: Diyalog verisini tanýmalý
 #include "CRPG_CharacterBase.generated.h"
 
 // Takým Tanýmý
@@ -31,7 +32,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCRPG_AttributeComponent* AttributeComp;
 
-	// YENÝ: Envanter Bileþeni
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCRPG_InventoryComponent* InventoryComp;
 
@@ -42,13 +42,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41 Configuration")
 	UCRPG_MutationData* MutationData;
 
-	// Takým Seçimi (Editörden ayarlanýr)
+	// [YENÝ] Karakterin konuþacaðý varsayýlan diyalog verisi
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41 Configuration")
+	UCRPG_DialogueData* DefaultDialogue;
+
+	// Takým Seçimi
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41 Configuration")
 	ETeamType TeamID;
 
 	bool IsPlayerCharacter() const;
 
-	// Highlight Fonksiyonu (InteractableActor'dan uyarlandý)
 	void SetHighlight(bool bIsActive);
 
 	// Etkileþim Fonksiyonu (Diyalog baþlatmak için)

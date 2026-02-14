@@ -9,6 +9,11 @@
 #include "Navigation/PathFollowingComponent.h" 
 #include "Components/PrimitiveComponent.h"
 
+// YENÝ UI BAÐLANTILARI
+#include "CRPG_HUD.h"
+#include "CRPG_DialogueWidget.h"
+#include "GameFramework/PlayerController.h"
+
 ACRPG_CharacterBase::ACRPG_CharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,7 +21,7 @@ ACRPG_CharacterBase::ACRPG_CharacterBase()
 	// Attribute Component
 	AttributeComp = CreateDefaultSubobject<UCRPG_AttributeComponent>(TEXT("AttributeComp"));
 
-	// YENÝ: Inventory Component
+	// Inventory Component
 	InventoryComp = CreateDefaultSubobject<UCRPG_InventoryComponent>(TEXT("InventoryComp"));
 
 	// Aggro Sphere
@@ -26,7 +31,7 @@ ACRPG_CharacterBase::ACRPG_CharacterBase()
 	AggroSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	AggroSphere->SetSphereRadius(1.0f);
 
-	// Movement & Rotation Ayarlarý
+	// Movement & Rotation
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -41,8 +46,6 @@ ACRPG_CharacterBase::ACRPG_CharacterBase()
 	GetCharacterMovement()->GroundFriction = 20.0f;
 
 	bIsSnappingToTile = false;
-
-	// Varsayýlan takým Düþman olsun
 	TeamID = ETeamType::Enemy;
 }
 
@@ -58,7 +61,6 @@ void ACRPG_CharacterBase::BeginPlay()
 	}
 
 	InitCharacter();
-
 	SetHighlight(false);
 }
 
@@ -223,7 +225,6 @@ void ACRPG_CharacterBase::StartCombatEncounter()
 
 void ACRPG_CharacterBase::SetHighlight(bool bIsActive)
 {
-	// Aktörün üzerindeki tüm meshleri bul (Kýyafet, Silah, Saç vs.)
 	TArray<UPrimitiveComponent*> AllComponents;
 	GetComponents<UPrimitiveComponent>(AllComponents);
 
@@ -240,14 +241,48 @@ void ACRPG_CharacterBase::SetHighlight(bool bIsActive)
 	}
 }
 
+// [GÜNCELLENDÝ] Artýk DefaultDialogue verisini kullanarak UI'ý açýyor
 void ACRPG_CharacterBase::InteractWithCharacter()
 {
-	if (TeamID == ETeamType::Neutral)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NPC INTERACTION: Hello traveler! I am %s."), *GetName());
-	}
-	else if (TeamID == ETeamType::Enemy)
+	if (TeamID == ETeamType::Enemy)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("COMBAT: You clicked on an Enemy! Attacking..."));
+		StartCombatEncounter();
+		return;
+	}
+
+	// Eðer karaktere atanmýþ bir diyalog verisi varsa
+	if (DefaultDialogue)
+	{
+		// 1. Oyuncunun Controller'ýný bul
+		APlayerController* PlayerPC = UGameplayStatics::GetPlayerController(this, 0);
+		if (PlayerPC)
+		{
+			// 2. HUD'a ulaþ
+			ACRPG_HUD* HUD = Cast<ACRPG_HUD>(PlayerPC->GetHUD());
+			if (HUD)
+			{
+				// 3. Widget'ý bul
+				if (UUserWidget* RawWidget = HUD->GetDialogueWidget())
+				{
+					if (UCRPG_DialogueWidget* DlgWidget = Cast<UCRPG_DialogueWidget>(RawWidget))
+					{
+						// 4. Diyaloðu baþlat
+						HUD->ShowDialogue(true);
+						DlgWidget->StartDialogue(DefaultDialogue);
+						UE_LOG(LogTemp, Log, TEXT("INTERACTION: Started dialogue with %s"), *GetName());
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("INTERACTION ERROR: HUD has no Dialogue Widget created!"));
+				}
+			}
+		}
+	}
+	else
+	{
+		// Data yoksa fallback mesajý
+		UE_LOG(LogTemp, Warning, TEXT("NPC INTERACTION: Hello traveler! I am %s. (No Dialogue Data Assigned)"), *GetName());
 	}
 }
