@@ -9,14 +9,13 @@
 #include "CRPG_DialogueData.h"
 #include "CRPG_DialogueWidget.generated.h"
 
-// Forward Declaration (Ana sýnýfý butona tanýtmak için)
+// Forward Declaration
 class UCRPG_DialogueWidget;
 
 /**
  * UCRPG_OptionButton
- * * TEKÝL CEVAP BUTONU (ENTEGRE SINIF)
- * Görevi: Bir cevap þýkkýný temsil eder.
- * Not: Script limitini aþmamak için DialogueWidget içine gömülmüþtür.
+ * * TEKÝL CEVAP BUTONU
+ * Görevi: ID'yi ve üzerindeki METNÝ saklar. Týklanýnca her ikisini de ana widget'a yollar.
  */
 UCLASS()
 class SILO41_API UCRPG_OptionButton : public UUserWidget
@@ -41,6 +40,9 @@ private:
 	// Týklanýnca gidilecek ID
 	int32 LinkedNodeID;
 
+	// Butonun üzerindeki metin (History'e eklemek için saklýyoruz)
+	FText LinkedText;
+
 	// Ana Widget Referansý
 	UPROPERTY()
 	UCRPG_DialogueWidget* ParentDialogue;
@@ -51,8 +53,8 @@ private:
 
 /**
  * UCRPG_DialogueWidget
- * * DÝYALOG EKRANI
- * Görevi: Diyalog verisini okur ve entegre OptionButton sýnýfýný kullanarak þýklarý listeler.
+ * * GELÝÞMÝÞ DÝYALOG SÝSTEMÝ (DISCO ELYSIUM STYLE)
+ * Özellikler: Akan Tarihçe (History), Satýr Ýçi Ýsimler, Resume
  */
 UCLASS()
 class SILO41_API UCRPG_DialogueWidget : public UUserWidget
@@ -62,37 +64,49 @@ class SILO41_API UCRPG_DialogueWidget : public UUserWidget
 public:
 	// --- CONFIG ---
 
-	// Þýk butonu sýnýfý (Entegre sýnýfý kullanýyoruz)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	TSubclassOf<UCRPG_OptionButton> OptionButtonClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	float TypewriterSpeed = 0.02f;
 
+	// Geçmiþ konuþmalarýn rengi
+	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
+	FLinearColor HistoryTextColor = FLinearColor(0.7f, 0.7f, 0.7f, 0.6f);
+
+	// Oyuncunun verdiði cevaplarýn rengi (History'de)
+	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
+	FLinearColor PlayerHistoryColor = FLinearColor(0.4f, 0.7f, 1.0f, 0.8f);
+
+	// Aktif konuþmacýnýn rengi (Yazýlan metin)
+	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
+	FLinearColor ActiveTextColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
 	// --- BINDINGS ---
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Txt_SpeakerName;
+	// [DEÐÝÞÝKLÝK] Txt_SpeakerName kaldýrýldý. Ýsim artýk metnin içinde.
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Txt_DialogueBody;
-
-	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
-	UScrollBox* Scroll_History;
+	UTextBlock* Txt_DialogueBody;  // Aktif Metin (Ýsim dahil)
 
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* OptionList;
+	UScrollBox* Scroll_History;    // Geçmiþ Metinler Kutusu
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Next;
+	UVerticalBox* OptionList;      // Cevaplar
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Next;             // Hýzlý Geçiþ
 
 	// --- LOGIC ---
 
 	UFUNCTION(BlueprintCallable, Category = "Silo41|Dialogue")
-	void StartDialogue(UCRPG_DialogueData* NewDialogue);
+	void StartDialogue(UCRPG_DialogueData* NewDialogue, int32 StartFromNodeID = -1);
 
-	// OptionButton tarafýndan çaðrýlýr (Public olmalý)
-	void SelectOption(int32 NextNodeID);
+	// OptionButton tarafýndan çaðrýlýr (Metni de alýr)
+	void SelectOption(int32 NextNodeID, FText SelectedText);
+
+	int32 GetCurrentNodeID() const { return CurrentNodeID; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -102,9 +116,12 @@ private:
 	UCRPG_DialogueData* CurrentDialogueData;
 
 	int32 CurrentNodeID;
-	FString FullText;
+	FString FullText; // Ýsim + Metin birleþmiþ hali
 	int32 CurrentCharIndex;
 	FTimerHandle TimerHandle_Typewriter;
+
+	// Son konuþulanlarý hafýzaya atar
+	void PushToHistory(const FString& FullMessage, bool bIsPlayer = false);
 
 	void ShowNode(int32 NodeID);
 	void OnTypewriterTick();

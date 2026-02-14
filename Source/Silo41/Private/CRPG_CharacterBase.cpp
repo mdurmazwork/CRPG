@@ -9,7 +9,7 @@
 #include "Navigation/PathFollowingComponent.h" 
 #include "Components/PrimitiveComponent.h"
 
-// YENÝ UI BAÐLANTILARI
+// UI BAÐLANTILARI
 #include "CRPG_HUD.h"
 #include "CRPG_DialogueWidget.h"
 #include "GameFramework/PlayerController.h"
@@ -47,6 +47,9 @@ ACRPG_CharacterBase::ACRPG_CharacterBase()
 
 	bIsSnappingToTile = false;
 	TeamID = ETeamType::Enemy;
+
+	// Hafýza Baþlatma
+	LastDialogueNodeID = -1;
 }
 
 void ACRPG_CharacterBase::BeginPlay()
@@ -241,7 +244,7 @@ void ACRPG_CharacterBase::SetHighlight(bool bIsActive)
 	}
 }
 
-// [GÜNCELLENDÝ] Artýk DefaultDialogue verisini kullanarak UI'ý açýyor
+// [GÜNCELLENDÝ] Kaldýðý yerden devam etme (LastDialogueNodeID) eklendi
 void ACRPG_CharacterBase::InteractWithCharacter()
 {
 	if (TeamID == ETeamType::Enemy)
@@ -251,26 +254,24 @@ void ACRPG_CharacterBase::InteractWithCharacter()
 		return;
 	}
 
-	// Eðer karaktere atanmýþ bir diyalog verisi varsa
 	if (DefaultDialogue)
 	{
-		// 1. Oyuncunun Controller'ýný bul
 		APlayerController* PlayerPC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PlayerPC)
 		{
-			// 2. HUD'a ulaþ
 			ACRPG_HUD* HUD = Cast<ACRPG_HUD>(PlayerPC->GetHUD());
 			if (HUD)
 			{
-				// 3. Widget'ý bul
 				if (UUserWidget* RawWidget = HUD->GetDialogueWidget())
 				{
 					if (UCRPG_DialogueWidget* DlgWidget = Cast<UCRPG_DialogueWidget>(RawWidget))
 					{
-						// 4. Diyaloðu baþlat
 						HUD->ShowDialogue(true);
-						DlgWidget->StartDialogue(DefaultDialogue);
-						UE_LOG(LogTemp, Log, TEXT("INTERACTION: Started dialogue with %s"), *GetName());
+
+						// Hafýzadaki ID ile baþlat. Eðer -1 ise en baþtan baþlar.
+						DlgWidget->StartDialogue(DefaultDialogue, LastDialogueNodeID);
+
+						UE_LOG(LogTemp, Log, TEXT("INTERACTION: Resuming dialogue at Node %d"), LastDialogueNodeID);
 					}
 				}
 				else
@@ -282,7 +283,6 @@ void ACRPG_CharacterBase::InteractWithCharacter()
 	}
 	else
 	{
-		// Data yoksa fallback mesajý
 		UE_LOG(LogTemp, Warning, TEXT("NPC INTERACTION: Hello traveler! I am %s. (No Dialogue Data Assigned)"), *GetName());
 	}
 }

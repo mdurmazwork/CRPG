@@ -6,7 +6,7 @@
 #include "CRPG_AttributeComponent.h" 
 #include "CRPG_InventoryComponent.h"
 #include "Components/SphereComponent.h"
-#include "CRPG_DialogueData.h" // YENÝ: Diyalog verisini tanýmalý
+#include "CRPG_DialogueData.h" 
 #include "CRPG_CharacterBase.generated.h"
 
 // Takým Tanýmý
@@ -45,6 +45,10 @@ public:
 	// [YENÝ] Karakterin konuþacaðý varsayýlan diyalog verisi
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41 Configuration")
 	UCRPG_DialogueData* DefaultDialogue;
+
+	// [YENÝ] Son konuþulan diyaloðun ID'si (Hafýza)
+	UPROPERTY(VisibleAnywhere, Category = "Silo41|State")
+	int32 LastDialogueNodeID; // Varsayýlan: -1
 
 	// Takým Seçimi
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41 Configuration")
