@@ -5,14 +5,54 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
+#include "Components/ScrollBox.h"
 #include "CRPG_DialogueData.h"
 #include "CRPG_DialogueWidget.generated.h"
+
+// Forward Declaration (Ana sýnýfý butona tanýtmak için)
+class UCRPG_DialogueWidget;
+
+/**
+ * UCRPG_OptionButton
+ * * TEKÝL CEVAP BUTONU (ENTEGRE SINIF)
+ * Görevi: Bir cevap þýkkýný temsil eder.
+ * Not: Script limitini aþmamak için DialogueWidget içine gömülmüþtür.
+ */
+UCLASS()
+class SILO41_API UCRPG_OptionButton : public UUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	// --- BINDINGS ---
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Root;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Txt_Option;
+
+	// --- SETUP ---
+	void SetupOption(int32 NodeID, FText Text, UCRPG_DialogueWidget* Parent);
+
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+	// Týklanýnca gidilecek ID
+	int32 LinkedNodeID;
+
+	// Ana Widget Referansý
+	UPROPERTY()
+	UCRPG_DialogueWidget* ParentDialogue;
+
+	UFUNCTION()
+	void OnButtonClicked();
+};
 
 /**
  * UCRPG_DialogueWidget
  * * DÝYALOG EKRANI
- * Görevi: Diyalog verisini (DataAsset) okur, yazýyý daktilo efektiyle yazar
- * ve cevap butonlarýný (Options) listeler.
+ * Görevi: Diyalog verisini okur ve entegre OptionButton sýnýfýný kullanarak þýklarý listeler.
  */
 UCLASS()
 class SILO41_API UCRPG_DialogueWidget : public UUserWidget
@@ -22,16 +62,14 @@ class SILO41_API UCRPG_DialogueWidget : public UUserWidget
 public:
 	// --- CONFIG ---
 
-	// Cevap þýkký için kullanýlacak Buton tasarýmý (WBP_OptionButton)
-	// Bu Widget'ýn içinde tek bir TextBlock (Adý: "Txt_Option") olmalý.
+	// Þýk butonu sýnýfý (Entegre sýnýfý kullanýyoruz)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
-	TSubclassOf<UUserWidget> OptionButtonClass;
+	TSubclassOf<UCRPG_OptionButton> OptionButtonClass;
 
-	// Harf yazma hýzý (Saniye)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
-	float TypewriterSpeed = 0.03f;
+	float TypewriterSpeed = 0.02f;
 
-	// --- BINDINGS (Görsel Elemanlar) ---
+	// --- BINDINGS ---
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_SpeakerName;
@@ -39,44 +77,39 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_DialogueBody;
 
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* OptionList; // Butonlarýn dizileceði kutu
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
+	UScrollBox* Scroll_History;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Next; // Hýzlý geçmek için ekranýn tamamýný kaplayan görünmez buton
+	UVerticalBox* OptionList;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Next;
 
 	// --- LOGIC ---
 
 	UFUNCTION(BlueprintCallable, Category = "Silo41|Dialogue")
 	void StartDialogue(UCRPG_DialogueData* NewDialogue);
 
+	// OptionButton tarafýndan çaðrýlýr (Public olmalý)
+	void SelectOption(int32 NextNodeID);
+
 protected:
 	virtual void NativeConstruct() override;
 
 private:
-	// Aktif Diyalog Verisi
 	UPROPERTY()
 	UCRPG_DialogueData* CurrentDialogueData;
 
-	// Þu anki düðüm (Node)
 	int32 CurrentNodeID;
-
-	// Daktilo Efekti Deðiþkenleri
 	FString FullText;
 	int32 CurrentCharIndex;
 	FTimerHandle TimerHandle_Typewriter;
 
 	void ShowNode(int32 NodeID);
 	void OnTypewriterTick();
-
-	// Daktilo bitince þýklarý gösterir
 	void ShowOptions(const TArray<FDialogueOption>& Options);
 
 	UFUNCTION()
-	void OnNextClicked(); // Hýzlý geçme
-
-	// Cevap þýkkýna týklandýðýnda (C++ tarafýnda dinamik delegate baðlama biraz karmaþýktýr,
-	// bu yüzden basit bir "ID ile cevapla" fonksiyonu kullanacaðýz)
-	UFUNCTION()
-	void SelectOption(int32 NextNodeID);
+	void OnNextClicked();
 };
