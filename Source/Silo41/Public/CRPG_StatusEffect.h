@@ -17,7 +17,7 @@ enum class EStatusType : uint8
  * UCRPG_StatusEffect
  * * ETKÝ TANIMI
  * Görevi: Bir durum etkisinin "Kurallarýný" tutar.
- * AttributeComponent bu veriyi okuyarak her tur iþlem yapar.
+ * AttributeComponent bu veriyi okuyarak her tur iþlem yapar. 
  */
 UCLASS(BlueprintType)
 class SILO41_API UCRPG_StatusEffect : public UPrimaryDataAsset

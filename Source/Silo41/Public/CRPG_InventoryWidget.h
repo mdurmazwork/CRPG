@@ -14,7 +14,7 @@
 // 1. CLASS: ITEM SLOT (KUTUCUK)
 // ============================================================================
 
-class UCRPG_InventoryWidget; // Forward Declaration
+class UCRPG_InventoryWidget; // Forward Declaration 
 
 UCLASS()
 class SILO41_API UCRPG_ItemSlot : public UUserWidget

@@ -10,7 +10,7 @@ enum class EAbilityType : uint8
 {
 	Melee   UMETA(DisplayName = "Melee Attack"),
 	Ranged  UMETA(DisplayName = "Ranged Attack"),
-	Skill   UMETA(DisplayName = "Utility Skill") // Heal, Buff vs.
+	Skill   UMETA(DisplayName = "Utility Skill") // Heal, Buff vs. 
 };
 
 // Hedef Tipi

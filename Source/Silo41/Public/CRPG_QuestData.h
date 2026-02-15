@@ -14,7 +14,7 @@ enum class EQuestType : uint8
 	Errand      UMETA(DisplayName = "Errand / Task")
 };
 
-// Görev Hedef Türü (Objective Type)
+// Görev Hedef Türü (Objective Type) 
 UENUM(BlueprintType)
 enum class EQuestObjectiveType : uint8
 {

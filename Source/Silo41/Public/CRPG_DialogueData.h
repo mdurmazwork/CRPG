@@ -14,7 +14,7 @@ struct FDialogueOption
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText Text;
 
-	// Bu þýkký seçince hangi ID'li düðüme gidilecek? (-1: Konuþmayý bitir)
+	// Bu þýkký seçince hangi ID'li düðüme gidilecek? (-1: Konuþmayý bitir) 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NextNodeID = -1;
 

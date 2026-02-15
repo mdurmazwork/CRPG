@@ -22,7 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	// Türden baðýmsýz (Actor) tutuyoruz ki hem NPC hem Sandýk tutabilsin
+	// Türden baðýmsýz (Actor) tutuyoruz ki hem NPC hem Sandýk tutabilsin 
 	UPROPERTY()
 	TArray<AActor*> HighlightedActors;
 };

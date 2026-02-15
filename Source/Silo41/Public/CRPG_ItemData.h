@@ -18,7 +18,7 @@ enum class EItemType : uint8
  * UCRPG_ItemData
  * * EÞYA KÝMLÝÐÝ
  * Görevi: Envanterdeki bir eþyanýn tüm statik verilerini tutar.
- * InventoryComponent bu veriyi referans olarak saklar.
+ * InventoryComponent bu veriyi referans olarak saklar. 
  */
 UCLASS(BlueprintType)
 class SILO41_API UCRPG_ItemData : public UPrimaryDataAsset

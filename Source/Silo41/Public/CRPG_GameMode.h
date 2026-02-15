@@ -19,7 +19,7 @@ class SILO41_API ACRPG_GameMode : public AGameModeBase
 public:
 	ACRPG_GameMode();
 
-	// --- State Management ---
+	// --- State Management --- 
 	UFUNCTION(BlueprintCallable, Category = "Silo41|GameMode")
 	ECRPG_GameState GetCurrentGameState() const { return CurrentGameState; }
 

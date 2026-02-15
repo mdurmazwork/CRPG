@@ -12,7 +12,7 @@
 /**
  * UCRPG_CombatWidget
  * * SAVAÞ ARAYÜZÜ
- * Görevi: Oyuncunun AP durumunu gösterir ve yeteneklerini (Skill Bar) listeler.
+ * Görevi: Oyuncunun AP durumunu gösterir ve yeteneklerini (Skill Bar) listeler. 
  */
 UCLASS()
 class SILO41_API UCRPG_CombatWidget : public UUserWidget

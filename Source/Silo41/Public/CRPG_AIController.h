@@ -14,7 +14,7 @@ class ACRPG_CharacterBase;
  * UCRPG_AIController
  * * UTILITY AI BRAIN
  * Görevi: Behavior Tree kullanmadan, anlýk duruma göre (Can, Mesafe, AP) puanlama yaparak
- * en mantýklý kararý veren C++ yapay zeka kontrolcüsü.
+ * en mantýklý kararý veren C++ yapay zeka kontrolcüsü. 
  */
 UCLASS()
 class SILO41_API ACRPG_AIController : public AAIController

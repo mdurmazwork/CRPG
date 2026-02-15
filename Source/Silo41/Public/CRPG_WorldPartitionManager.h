@@ -17,7 +17,7 @@ public:
 
 	// --- Config ---
 
-	// Bir mantýksal sektörün boyutu (cm cinsinden). Örn: 5000 = 50 metre.
+	// Bir mantýksal sektörün boyutu (cm cinsinden). Örn: 5000 = 50 metre. 
 	UPROPERTY(EditAnywhere, Category = "Silo41|World Settings")
 	float SectorSize = 5000.0f;
 

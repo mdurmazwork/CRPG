@@ -12,7 +12,7 @@ struct FActiveStatusEffect
 {
 	GENERATED_BODY()
 
-	// Etkinin kaynak verisi (DataAsset)
+	// Etkinin kaynak verisi (DataAsset) 
 	UPROPERTY()
 	UCRPG_StatusEffect* EffectData;
 

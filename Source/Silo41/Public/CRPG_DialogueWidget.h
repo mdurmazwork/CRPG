@@ -6,7 +6,7 @@
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/ScrollBox.h"
-#include "Components/Image.h" // Resim için gerekli
+#include "Components/Image.h" // Resim için gerekli 
 #include "CRPG_DialogueData.h"
 #include "CRPG_DialogueWidget.generated.h"
 

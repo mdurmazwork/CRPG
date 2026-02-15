@@ -19,7 +19,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	// --- INPUT ACTIONS ---
+	// --- INPUT ACTIONS --- 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputMappingContext* DefaultMappingContext;
 

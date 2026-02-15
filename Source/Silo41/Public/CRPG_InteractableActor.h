@@ -25,7 +25,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41|Interaction")
 	bool bIsInteractable;
 
-	// --- YENÝ: LOOT SÝSTEMÝ (Basit Test Ýçin) ---
+	// --- YENÝ: LOOT SÝSTEMÝ (Basit Test Ýçin) --- 
 
 	// Bu objeye týklandýðýnda oyuncuya verilecek eþya (Boþ býrakýlýrsa vermez)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Silo41|Loot")

@@ -24,7 +24,7 @@ struct FMutationStats
 
 /**
  * UCRPG_MutationData
- * Eklenen Özellik: Portrait (Diyalog Portresi)
+ * Eklenen Özellik: Portrait (Diyalog Portresi) 
  */
 UCLASS(BlueprintType)
 class SILO41_API UCRPG_MutationData : public UPrimaryDataAsset

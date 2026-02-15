@@ -17,7 +17,7 @@ class SILO41_API ACRPG_HUD : public AHUD
 public:
 	ACRPG_HUD();
 
-	// --- CONFIG ---
+	// --- CONFIG --- 
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI Classes")
 	TSubclassOf<UUserWidget> MainHUDClass;
 

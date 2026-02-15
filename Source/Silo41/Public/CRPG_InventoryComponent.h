@@ -26,7 +26,7 @@ struct FInventorySlot
 	bool IsValid() const { return ItemData != nullptr && Quantity > 0; }
 };
 
-// Envanter deðiþtiðinde UI'ý uyarmak için Delegate
+// Envanter deðiþtiðinde UI'ý uyarmak için Delegate 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))

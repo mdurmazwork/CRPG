@@ -23,7 +23,7 @@ struct FLootRule
 	int32 MaxQuantity = 1;
 };
 
-// Basit veri taþýyýcý (Inventory baðýmlýlýðýný kýrmak için)
+// Basit veri taþýyýcý (Inventory baðýmlýlýðýný kýrmak için) 
 USTRUCT(BlueprintType)
 struct FLootResult
 {

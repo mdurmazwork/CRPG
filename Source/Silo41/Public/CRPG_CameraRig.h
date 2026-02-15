@@ -8,7 +8,7 @@ class USpringArmComponent;
 class UCameraComponent;
 
 /**
- * ACRPG_CameraRig (Revize v6: Inventory Mode Added)
+ * ACRPG_CameraRig (Revize v6: Inventory Mode Added) 
  */
 UCLASS()
 class SILO41_API ACRPG_CameraRig : public AActor

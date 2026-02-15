@@ -13,7 +13,7 @@ class SILO41_API ACRPG_TurnManager : public AActor
 public:
 	ACRPG_TurnManager();
 
-	// Savaþi baþlatýr ve katýlýmcý listesini alýr.
+	// Savaþi baþlatýr ve katýlýmcý listesini alýr. 
 	void StartCombat(const TArray<ACRPG_CharacterBase*>& Combatants);
 
 	// Sýradaki karaktere geçer.

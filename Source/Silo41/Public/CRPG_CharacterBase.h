@@ -9,7 +9,7 @@
 #include "CRPG_DialogueData.h" 
 #include "CRPG_CharacterBase.generated.h"
 
-// Takým Tanýmý
+// Takým Tanýmý 
 UENUM(BlueprintType)
 enum class ETeamType : uint8
 {

@@ -13,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionPointsChanged, int32, NewA
  * Görevi:
  * 1. Karakterin sahip olduðu yetenekleri (Loadout) tutar.
  * 2. Action Point (AP) yönetimini yapar.
- * 3. Yetenekleri çalýþtýrýr (Animasyon, VFX, Hasar).
+ * 3. Yetenekleri çalýþtýrýr (Animasyon, VFX, Hasar). 
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SILO41_API UCRPG_ActionComponent : public UActorComponent

@@ -24,7 +24,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Grid Settings")
 	float TileSize = 200.0f;
 
-	// --- Components ---
+	// --- Components --- 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* CombatBounds;
 
