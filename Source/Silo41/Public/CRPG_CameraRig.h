@@ -8,14 +8,7 @@ class USpringArmComponent;
 class UCameraComponent;
 
 /**
- * ACRPG_CameraRig (Revize v2: Free Roam & Lock System)
- * * ÝZOMETRÝK KAMERA SÝSTEMÝ
- * Görevi: Oyuncudan baðýmsýz hareket edebilen, istendiðinde karaktere kilitlenen kamera.
- * Kontrol:
- * - WASD: Kamerayý kaydýr (Pan).
- * - Q/E: Kamerayý döndür (Rotate).
- * - Scroll: Yakýnlaþ/Uzaklaþ (Zoom).
- * - Space: Karaktere kilitlen/Serbest býrak (Lock/Unlock).
+ * ACRPG_CameraRig (Revize v6: Inventory Mode Added)
  */
 UCLASS()
 class SILO41_API ACRPG_CameraRig : public AActor
@@ -27,23 +20,23 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	// PlayerController tarafýndan çaðrýlýr.
 	void AddYawInput(float Val);
 	void AddZoomInput(float Val);
-
-	// YENÝ: Kamerayý WASD ile kaydýrma
 	void AddPanInput(const FVector2D& PanInput);
-
-	// YENÝ: Kamerayý karaktere kilitle veya serbest býrak
 	void ToggleCameraLock();
-
-	// YENÝ: Kameranýn þu an kilitli olup olmadýðýný döner
 	bool IsCameraLocked() const { return bIsCameraLocked; }
+
+	// --- CAMERA MODES ---
+	void EnableDialogueMode(AActor* NpcActor);
+	void DisableDialogueMode();
+
+	// [YENÝ] Envanter Modu (Karakteri sola yaslar)
+	void EnableInventoryMode();
+	void DisableInventoryMode();
 
 protected:
 	virtual void BeginPlay() override;
 
-	// --- Components ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USceneComponent* RootScene;
 
@@ -53,14 +46,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* MainCamera;
 
-	// --- Settings ---
-
-	// Kameranýn takip edeceði aktör (Genellikle CharacterBase)
 	UPROPERTY()
 	AActor* TargetActor;
 
+	// --- SETTINGS ---
 	UPROPERTY(EditAnywhere, Category = "Camera Settings")
-	float CameraSmoothSpeed = 10.0f; // Pan yaparken daha hýzlý tepki vermesi için artýrdýk
+	float CameraSmoothSpeed = 5.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Camera Settings")
 	float RotationSmoothSpeed = 5.0f;
@@ -74,20 +65,42 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Camera Settings")
 	float MaxZoom = 2500.0f;
 
-	// YENÝ: WASD ile kaydýrma hýzý
 	UPROPERTY(EditAnywhere, Category = "Camera Settings")
 	float PanSpeed = 1500.0f;
 
+	// --- DIALOGUE MODE ---
+	UPROPERTY(EditAnywhere, Category = "Camera Settings|Dialogue")
+	float DialogueZoomDistance = 750.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Camera Settings|Dialogue")
+	float DialogueScreenOffset = 250.0f; // Saða kaydýrýr
+
+	UPROPERTY(EditAnywhere, Category = "Camera Settings|Dialogue")
+	float DialogueTransitionSpeed = 2.0f;
+
+	// --- [YENÝ] INVENTORY MODE ---
+
+	// Envanter açýlýnca ne kadar yaklaþsýn?
+	UPROPERTY(EditAnywhere, Category = "Camera Settings|Inventory")
+	float InventoryZoomDistance = 600.0f;
+
+	// Envanter açýlýnca kamera ne kadar SAÐA kaysýn? (Karakter SOLA geçer)
+	// Görseline göre karakter solda olacaðý için kamerayý saða itmeliyiz.
+	UPROPERTY(EditAnywhere, Category = "Camera Settings|Inventory")
+	float InventoryScreenOffset = 300.0f;
+
 private:
-	// Hedeflenen rotasyon (Yumuþak geçiþ için)
 	float TargetYaw;
-
-	// Hedeflenen Zoom mesafesi
 	float TargetArmLength;
+	float SavedArmLength;
 
-	// YENÝ: Hedeflenen Dünya Pozisyonu (Kameranýn gitmek istediði yer)
 	FVector TargetLocation;
-
-	// YENÝ: Kamera karaktere kilitli mi?
 	bool bIsCameraLocked;
+
+	// Modes
+	bool bIsDialogueActive;
+	bool bIsInventoryActive; // [YENÝ]
+
+	UPROPERTY()
+	AActor* DialogueNPC;
 };

@@ -17,7 +17,7 @@ class SILO41_API ACRPG_PlayerController : public APlayerController
 public:
 	ACRPG_PlayerController();
 
-	virtual void Tick(float DeltaTime) override; // YENÝ: Mesafe kontrolü için Tick açýldý
+	virtual void Tick(float DeltaTime) override;
 
 	// --- INPUT ACTIONS ---
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -28,6 +28,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* HighlightAction;
+
+	// [YENÝ] Envanter Tuþu (I)
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* InventoryAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* CameraPanAction;
@@ -51,7 +55,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
 	float MouseRotationSpeed = 1.0f;
 
-	// Etkileþim için ne kadar yaklaþmalý? (cm)
 	UPROPERTY(EditAnywhere, Category = "Silo41|Interaction")
 	float InteractionStoppingDistance = 180.0f;
 
@@ -63,9 +66,11 @@ protected:
 
 private:
 	void OnClickTriggered(const FInputActionValue& Value);
-
 	void OnHighlightPressed(const FInputActionValue& Value);
 	void OnHighlightReleased(const FInputActionValue& Value);
+
+	// [YENÝ]
+	void OnInventoryKeyPressed(const FInputActionValue& Value);
 
 	void OnCameraPan(const FInputActionValue& Value);
 	void OnCameraLock(const FInputActionValue& Value);
@@ -76,7 +81,7 @@ private:
 	void OnRotateMouseRelease(const FInputActionValue& Value);
 	void OnRotateMouseAxis(const FInputActionValue& Value);
 
-	// --- YENÝ: Yaklaþ ve Etkileþ Sistemi ---
+	// --- Interaction Logic ---
 	void MoveToInteractable(AActor* Target);
 	void CheckInteractionDistance();
 	void PerformInteraction();
@@ -86,10 +91,7 @@ private:
 	bool bIsMiddleMousePressed;
 	bool bIsTurnActive;
 
-	// Hafýzadaki Hedef
 	UPROPERTY()
 	AActor* CachedTargetActor;
-
-	// Þu an hedefe doðru yürüyor muyuz?
 	bool bIsApproachingTarget;
 };

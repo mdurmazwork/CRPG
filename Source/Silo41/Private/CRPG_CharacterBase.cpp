@@ -2,6 +2,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h" 
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h" // YENÝ: Matematik Kütüphanesi
 #include "CRPG_GridManager.h"
 #include "CRPG_GameMode.h"
 #include "TimerManager.h"
@@ -244,7 +245,6 @@ void ACRPG_CharacterBase::SetHighlight(bool bIsActive)
 	}
 }
 
-// [GÜNCELLENDÝ] Kaldýðý yerden devam etme (LastDialogueNodeID) eklendi
 void ACRPG_CharacterBase::InteractWithCharacter()
 {
 	if (TeamID == ETeamType::Enemy)
@@ -259,6 +259,34 @@ void ACRPG_CharacterBase::InteractWithCharacter()
 		APlayerController* PlayerPC = UGameplayStatics::GetPlayerController(this, 0);
 		if (PlayerPC)
 		{
+			// [GÜNCELLEME] Yüzleþme Mantýðý (Facing Logic)
+			// Diyalog baþlamadan önce NPC ve Player birbirine dönsün.
+			ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(this, 0);
+			if (PlayerChar)
+			{
+				// 1. NPC, Player'a dönsün
+				FVector NpcLoc = GetActorLocation();
+				FVector PlayerLoc = PlayerChar->GetActorLocation();
+
+				// Z eksenini sýfýrla ki yukarý/aþaðý bakmasýnlar
+				FVector LookAtPlayer = PlayerLoc;
+				LookAtPlayer.Z = NpcLoc.Z;
+
+				FRotator NpcRot = UKismetMathLibrary::FindLookAtRotation(NpcLoc, LookAtPlayer);
+				SetActorRotation(NpcRot);
+
+				// 2. Player, NPC'ye dönsün
+				FVector LookAtNpc = NpcLoc;
+				LookAtNpc.Z = PlayerLoc.Z;
+
+				FRotator PlayerRot = UKismetMathLibrary::FindLookAtRotation(PlayerLoc, LookAtNpc);
+				PlayerChar->SetActorRotation(PlayerRot);
+
+				// Player'ýn hareketini durdur (Garanti olsun)
+				PlayerChar->GetCharacterMovement()->StopMovementImmediately();
+			}
+
+			// --- UI BAÞLATMA ---
 			ACRPG_HUD* HUD = Cast<ACRPG_HUD>(PlayerPC->GetHUD());
 			if (HUD)
 			{
@@ -266,10 +294,14 @@ void ACRPG_CharacterBase::InteractWithCharacter()
 				{
 					if (UCRPG_DialogueWidget* DlgWidget = Cast<UCRPG_DialogueWidget>(RawWidget))
 					{
-						HUD->ShowDialogue(true);
+						// MutationData varsa portreyi gönder, yoksa nullptr
+						UTexture2D* Portrait = MutationData ? MutationData->Portrait : nullptr;
 
-						// Hafýzadaki ID ile baþlat. Eðer -1 ise en baþtan baþlar.
-						DlgWidget->StartDialogue(DefaultDialogue, LastDialogueNodeID);
+						// Kamera sistemini tetikle (Target: NPC yani 'this')
+						HUD->ShowDialogue(true, this);
+
+						// Diyalog metnini baþlat
+						DlgWidget->StartDialogue(DefaultDialogue, Portrait, LastDialogueNodeID);
 
 						UE_LOG(LogTemp, Log, TEXT("INTERACTION: Resuming dialogue at Node %d"), LastDialogueNodeID);
 					}

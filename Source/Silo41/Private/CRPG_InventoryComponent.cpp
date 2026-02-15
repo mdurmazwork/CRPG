@@ -1,15 +1,22 @@
 #include "CRPG_InventoryComponent.h"
-#include "CRPG_CharacterBase.h" // Ýleride karakterin fonksiyonunu çaðýrmak için
+#include "CRPG_CharacterBase.h" 
 
 UCRPG_InventoryComponent::UCRPG_InventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	Capacity = 20;
+	Capacity = 70; // 10x7 Grid istediðin için
 }
 
 void UCRPG_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// [ÖNEMLÝ] Grid sisteminin düzgün çalýþmasý için diziyi kapasite kadar "Boþ Slot" ile dolduruyoruz.
+	InventoryContent.Empty();
+	for (int32 i = 0; i < Capacity; i++)
+	{
+		InventoryContent.Add(FInventorySlot()); // Boþ struct ekle
+	}
 
 	// Baþlangýç eþyalarýný ekle
 	for (UCRPG_ItemData* Item : DefaultItems)
@@ -25,36 +32,36 @@ bool UCRPG_InventoryComponent::AddItem(UCRPG_ItemData* NewItem, int32 Count)
 	// 1. Eþya Yýðýnlanabilir (Stackable) ise, mevcut slotu bul
 	if (NewItem->bIsStackable)
 	{
-		for (FInventorySlot& Slot : InventoryContent)
+		for (int32 i = 0; i < InventoryContent.Num(); i++)
 		{
-			if (Slot.ItemData == NewItem)
+			if (InventoryContent[i].ItemData == NewItem)
 			{
-				// Limit kontrolü eklenebilir (MaxStackSize)
-				Slot.Quantity += Count;
+				// Limit kontrolü (MaxStackSize) buraya eklenebilir
+				InventoryContent[i].Quantity += Count;
 
-				UE_LOG(LogTemp, Log, TEXT("INVENTORY: Stacked %d x %s. Total: %d"), Count, *NewItem->Name.ToString(), Slot.Quantity);
+				UE_LOG(LogTemp, Log, TEXT("INVENTORY: Stacked %d x %s at Index %d. Total: %d"), Count, *NewItem->Name.ToString(), i, InventoryContent[i].Quantity);
 				OnInventoryUpdated.Broadcast();
 				return true;
 			}
 		}
 	}
 
-	// 2. Yýðýnlanamaz veya çantada yoksa: Yeni Slot aç
-	if (InventoryContent.Num() >= Capacity)
+	// 2. Boþ Bir Slot Bul (Add yapmak yerine boþ olaný dolduruyoruz)
+	for (int32 i = 0; i < InventoryContent.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("INVENTORY FULL: Cannot add %s"), *NewItem->Name.ToString());
-		return false;
+		if (!InventoryContent[i].IsValid()) // Slot boþ mu?
+		{
+			InventoryContent[i].ItemData = NewItem;
+			InventoryContent[i].Quantity = Count;
+
+			UE_LOG(LogTemp, Log, TEXT("INVENTORY: Added %s to Empty Slot %d"), *NewItem->Name.ToString(), i);
+			OnInventoryUpdated.Broadcast();
+			return true;
+		}
 	}
 
-	FInventorySlot NewSlot;
-	NewSlot.ItemData = NewItem;
-	NewSlot.Quantity = Count;
-
-	InventoryContent.Add(NewSlot);
-
-	UE_LOG(LogTemp, Log, TEXT("INVENTORY: Added New Slot %d x %s"), Count, *NewItem->Name.ToString());
-	OnInventoryUpdated.Broadcast();
-	return true;
+	UE_LOG(LogTemp, Warning, TEXT("INVENTORY FULL: Could not add %s"), *NewItem->Name.ToString());
+	return false;
 }
 
 bool UCRPG_InventoryComponent::RemoveItem(UCRPG_ItemData* ItemToRemove, int32 Count)
@@ -69,8 +76,12 @@ bool UCRPG_InventoryComponent::RemoveItem(UCRPG_ItemData* ItemToRemove, int32 Co
 
 			if (InventoryContent[i].Quantity <= 0)
 			{
-				InventoryContent.RemoveAt(i);
-				UE_LOG(LogTemp, Log, TEXT("INVENTORY: Removed item slot %s"), *ItemToRemove->Name.ToString());
+				// [GÜNCELLEME] RemoveAt kullanmýyoruz! Slotu sýfýrlýyoruz.
+				// Böylece diðer eþyalar kaymýyor.
+				InventoryContent[i].ItemData = nullptr;
+				InventoryContent[i].Quantity = 0;
+
+				UE_LOG(LogTemp, Log, TEXT("INVENTORY: Cleared slot %d"), i);
 			}
 			else
 			{
@@ -103,20 +114,18 @@ bool UCRPG_InventoryComponent::UseItem(int32 SlotIndex)
 	if (!InventoryContent.IsValidIndex(SlotIndex)) return false;
 
 	FInventorySlot& Slot = InventoryContent[SlotIndex];
-	if (!Slot.IsValid()) return false;
 
-	UCRPG_ItemData* Item = Slot.ItemData;
-
-	UE_LOG(LogTemp, Warning, TEXT("INVENTORY ACTION: Using %s (Tag: %s)"), *Item->Name.ToString(), *Item->FunctionTag.ToString());
-
-	// TODO: Ýleride FunctionTag'e göre iþlem yapacaðýz.
-	// Örn: if(Tag == "Heal_50") Player->Heal(50);
-
-	// Tüketilebilir ise 1 adet eksilt
-	if (Item->ItemType == EItemType::Consumable)
+	if (Slot.IsValid() && Slot.ItemData)
 	{
-		RemoveItem(Item, 1);
-	}
+		// Consumable mantýðý buraya gelecek
+		UE_LOG(LogTemp, Log, TEXT("INVENTORY: Used %s from Slot %d"), *Slot.ItemData->Name.ToString(), SlotIndex);
 
-	return true;
+		// Tüketilebilir ise 1 tane azalt
+		if (Slot.ItemData->ItemType == EItemType::Consumable)
+		{
+			RemoveItem(Slot.ItemData, 1);
+		}
+		return true;
+	}
+	return false;
 }

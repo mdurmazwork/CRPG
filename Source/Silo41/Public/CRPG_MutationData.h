@@ -24,7 +24,7 @@ struct FMutationStats
 
 /**
  * UCRPG_MutationData
- * Eklenen Özellik: AggroRadius (Düþman Algý Mesafesi)
+ * Eklenen Özellik: Portrait (Diyalog Portresi)
  */
 UCLASS(BlueprintType)
 class SILO41_API UCRPG_MutationData : public UPrimaryDataAsset
@@ -39,6 +39,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Identity")
 	FText Description;
 
+	// [YENÝ] Karakterin Diyalog Ekranýndaki Portresi
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Identity")
+	UTexture2D* Portrait;
+
 	// --- Visuals ---
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	USkeletalMesh* SkeletalMesh;
@@ -46,19 +50,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	TSubclassOf<UAnimInstance> AnimClass;
 
-	// --- Statistics ---
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	float AggroRadius = 800.0f;
+
+	// --- Stats ---
 	UPROPERTY(EditDefaultsOnly, Category = "Stats")
 	FMutationStats BaseStats;
-
-	// --- AI / Combat Settings ---
-
-	// Düþmanýn oyuncuyu görüp savaþý baþlatacaðý mesafe (cm).
-	// Örn: 600 = 6 metre.
-	UPROPERTY(EditDefaultsOnly, Category = "AI Behavior")
-	float AggroRadius = 600.0f;
-
-	virtual FPrimaryAssetId GetPrimaryAssetId() const override
-	{
-		return FPrimaryAssetId("MutationData", GetFName());
-	}
 };

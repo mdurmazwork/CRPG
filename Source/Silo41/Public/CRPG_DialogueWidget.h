@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/ScrollBox.h"
+#include "Components/Image.h" // Resim için gerekli
 #include "CRPG_DialogueData.h"
 #include "CRPG_DialogueWidget.generated.h"
 
@@ -15,7 +16,6 @@ class UCRPG_DialogueWidget;
 /**
  * UCRPG_OptionButton
  * * TEKÝL CEVAP BUTONU
- * Görevi: ID'yi ve üzerindeki METNÝ saklar. Týklanýnca her ikisini de ana widget'a yollar.
  */
 UCLASS()
 class SILO41_API UCRPG_OptionButton : public UUserWidget
@@ -31,19 +31,15 @@ public:
 	UTextBlock* Txt_Option;
 
 	// --- SETUP ---
-	void SetupOption(int32 NodeID, FText Text, UCRPG_DialogueWidget* Parent);
+	void SetupOption(int32 NodeID, FText OriginalText, int32 Index, UCRPG_DialogueWidget* Parent);
 
 protected:
 	virtual void NativeConstruct() override;
 
 private:
-	// Týklanýnca gidilecek ID
 	int32 LinkedNodeID;
-
-	// Butonun üzerindeki metin (History'e eklemek için saklýyoruz)
 	FText LinkedText;
 
-	// Ana Widget Referansý
 	UPROPERTY()
 	UCRPG_DialogueWidget* ParentDialogue;
 
@@ -53,8 +49,8 @@ private:
 
 /**
  * UCRPG_DialogueWidget
- * * GELÝÞMÝÞ DÝYALOG SÝSTEMÝ (INSTANT TEXT)
- * Özellikler: Daktilo efekti kapatýldý. Metinler anýnda belirir.
+ * * GELÝÞMÝÞ DÝYALOG SÝSTEMÝ
+ * Özellik: Portre desteði eklendi.
  */
 UCLASS()
 class SILO41_API UCRPG_DialogueWidget : public UUserWidget
@@ -63,48 +59,43 @@ class SILO41_API UCRPG_DialogueWidget : public UUserWidget
 
 public:
 	// --- CONFIG ---
-
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	TSubclassOf<UCRPG_OptionButton> OptionButtonClass;
 
-	// [DEVRE DIÞI] Daktilo efekti hýzý (Artýk kullanýlmýyor)
-	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
-	float TypewriterSpeed = 0.0f;
-
-	// Geçmiþ konuþmalarýn rengi
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	FLinearColor HistoryTextColor = FLinearColor(0.7f, 0.7f, 0.7f, 0.6f);
 
-	// Oyuncunun verdiði cevaplarýn rengi (History'de)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	FLinearColor PlayerHistoryColor = FLinearColor(0.4f, 0.7f, 1.0f, 0.8f);
 
-	// Aktif konuþmacýnýn rengi (Yazýlan metin)
 	UPROPERTY(EditDefaultsOnly, Category = "Silo41|UI")
 	FLinearColor ActiveTextColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// --- BINDINGS ---
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Txt_DialogueBody;  // Aktif Metin (Ýsim dahil)
+	// [YENÝ] Konuþmacý Portresi
+	UPROPERTY(meta = (BindWidget, OptionalWidget = true))
+	UImage* Img_SpeakerPortrait;
 
 	UPROPERTY(meta = (BindWidget))
-	UScrollBox* Scroll_History;    // Geçmiþ Metinler Kutusu
+	UTextBlock* Txt_DialogueBody;
 
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* OptionList;      // Cevaplar
+	UScrollBox* Scroll_History;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Next;             // Hýzlý Geçiþ (Artýk opsiyonel)
+	UVerticalBox* OptionList;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Next;
 
 	// --- LOGIC ---
 
+	// [GÜNCELLENDÝ] Artýk opsiyonel olarak bir portre texture'ý alýyor
 	UFUNCTION(BlueprintCallable, Category = "Silo41|Dialogue")
-	void StartDialogue(UCRPG_DialogueData* NewDialogue, int32 StartFromNodeID = -1);
+	void StartDialogue(UCRPG_DialogueData* NewDialogue, UTexture2D* PortraitTexture = nullptr, int32 StartFromNodeID = -1);
 
-	// OptionButton tarafýndan çaðrýlýr (Metni de alýr)
 	void SelectOption(int32 NextNodeID, FText SelectedText);
-
 	int32 GetCurrentNodeID() const { return CurrentNodeID; }
 
 protected:
@@ -115,11 +106,9 @@ private:
 	UCRPG_DialogueData* CurrentDialogueData;
 
 	int32 CurrentNodeID;
-	FString FullText; // Ýsim + Metin birleþmiþ hali
+	FString FullText;
 
-	// Son konuþulanlarý hafýzaya atar
 	void PushToHistory(const FString& FullMessage, bool bIsPlayer = false);
-
 	void ShowNode(int32 NodeID);
 	void ShowOptions(const TArray<FDialogueOption>& Options);
 

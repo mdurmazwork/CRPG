@@ -1,6 +1,7 @@
 #include "CRPG_DialogueWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/ScrollBoxSlot.h" 
+#include "Components/Image.h"
 #include "CRPG_HUD.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,15 +20,16 @@ void UCRPG_OptionButton::NativeConstruct()
 	}
 }
 
-void UCRPG_OptionButton::SetupOption(int32 NodeID, FText Text, UCRPG_DialogueWidget* Parent)
+void UCRPG_OptionButton::SetupOption(int32 NodeID, FText OriginalText, int32 Index, UCRPG_DialogueWidget* Parent)
 {
 	LinkedNodeID = NodeID;
-	LinkedText = Text;
+	LinkedText = OriginalText;
 	ParentDialogue = Parent;
 
 	if (Txt_Option)
 	{
-		Txt_Option->SetText(Text);
+		FString NumberedStr = FString::Printf(TEXT("%d. - \"%s\""), Index, *OriginalText.ToString());
+		Txt_Option->SetText(FText::FromString(NumberedStr));
 	}
 }
 
@@ -57,14 +59,29 @@ void UCRPG_DialogueWidget::NativeConstruct()
 	if (Scroll_History) Scroll_History->ClearChildren();
 }
 
-void UCRPG_DialogueWidget::StartDialogue(UCRPG_DialogueData* NewDialogue, int32 StartFromNodeID)
+// [GÜNCELLENDÝ] Portre parametresi iþleniyor
+void UCRPG_DialogueWidget::StartDialogue(UCRPG_DialogueData* NewDialogue, UTexture2D* PortraitTexture, int32 StartFromNodeID)
 {
 	if (!NewDialogue) return;
 
 	CurrentDialogueData = NewDialogue;
 
-	// Yeni konuþma baþladýðýnda history'i temizle
 	if (Scroll_History) Scroll_History->ClearChildren();
+
+	// Portre Ayarý
+	if (Img_SpeakerPortrait)
+	{
+		if (PortraitTexture)
+		{
+			Img_SpeakerPortrait->SetBrushFromTexture(PortraitTexture);
+			Img_SpeakerPortrait->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			// Portre yoksa gizle (yer kaplamasýn istiyorsan Collapsed, boþluk kalsýn istiyorsan Hidden)
+			Img_SpeakerPortrait->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
 
 	int32 TargetID = (StartFromNodeID != -1) ? StartFromNodeID : NewDialogue->StartNodeID;
 	ShowNode(TargetID);
@@ -78,10 +95,7 @@ void UCRPG_DialogueWidget::PushToHistory(const FString& FullMessage, bool bIsPla
 
 	if (HistoryLine)
 	{
-		// Metni ayarla
 		HistoryLine->SetText(FText::FromString(FullMessage));
-
-		// Stil Ayarlarý
 		HistoryLine->SetColorAndOpacity(bIsPlayer ? PlayerHistoryColor : HistoryTextColor);
 		HistoryLine->SetAutoWrapText(true);
 
@@ -93,12 +107,10 @@ void UCRPG_DialogueWidget::PushToHistory(const FString& FullMessage, bool bIsPla
 		UPanelSlot* PanelSlot = Scroll_History->AddChild(HistoryLine);
 		if (UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(PanelSlot))
 		{
-			// Satýr aralarýna boþluk
 			ScrollSlot->SetPadding(FMargin(0.0f, 0.0f, 0.0f, 15.0f));
 			ScrollSlot->SetHorizontalAlignment(HAlign_Fill);
 		}
 
-		// Her zaman en alta odaklan
 		Scroll_History->ScrollToEnd();
 	}
 }
@@ -123,42 +135,27 @@ void UCRPG_DialogueWidget::ShowNode(int32 NodeID)
 		return;
 	}
 
-	// [GEÇMÝÞE AT]
-	// Eðer ekranda halihazýrda yazýlmýþ bir metin varsa, onu tarihçeye at.
-	if (Txt_DialogueBody && !Txt_DialogueBody->GetText().IsEmpty())
-	{
-		PushToHistory(FullText, false); // false = NPC konuþtu
-	}
-
 	CurrentNodeID = NodeID;
 
-	// Ýsim ve Metni Birleþtir
 	FString Speaker = Node->SpeakerName.ToString().ToUpper();
 	if (Speaker.IsEmpty()) Speaker = TEXT("UNKNOWN");
 
-	// Format: "MARCUS: Buradan çýkmamýz lazým."
-	FullText = FString::Printf(TEXT("%s: %s"), *Speaker, *Node->Text.ToString());
+	FullText = FString::Printf(TEXT("%s: \"%s\""), *Speaker, *Node->Text.ToString());
 
-	// [INSTANT TEXT MANTIÐI]
-	// Daktilo efekti yok, doðrudan metni basýyoruz.
 	if (Txt_DialogueBody)
 	{
 		Txt_DialogueBody->SetText(FText::FromString(FullText));
 		Txt_DialogueBody->SetColorAndOpacity(ActiveTextColor);
 	}
 
-	// Þýklar hemen gösterilir
 	if (OptionList) OptionList->ClearChildren();
 	ShowOptions(Node->PlayerOptions);
 
-	// Scroll'u güncelle
 	if (Scroll_History) Scroll_History->ScrollToEnd();
 }
 
 void UCRPG_DialogueWidget::OnNextClicked()
 {
-	// Metin artýk anýnda geldiði için bu butonun "Hýzlandýrma" iþlevi kalmadý.
-	// Ancak yine de scroll'u aþaðý itmek için tutabiliriz.
 	if (Scroll_History) Scroll_History->ScrollToEnd();
 }
 
@@ -174,18 +171,20 @@ void UCRPG_DialogueWidget::ShowOptions(const TArray<FDialogueOption>& Options)
 		if (EndBtn)
 		{
 			FText EndText = FText::FromString("[End Dialogue]");
-			EndBtn->SetupOption(-1, EndText, this);
+			EndBtn->SetupOption(-1, EndText, 1, this);
 			OptionList->AddChildToVerticalBox(EndBtn);
 		}
 		return;
 	}
 
-	for (const FDialogueOption& Option : Options)
+	for (int32 i = 0; i < Options.Num(); i++)
 	{
+		const FDialogueOption& Option = Options[i];
+
 		UCRPG_OptionButton* BtnWidget = CreateWidget<UCRPG_OptionButton>(this, OptionButtonClass);
 		if (BtnWidget)
 		{
-			BtnWidget->SetupOption(Option.NextNodeID, Option.Text, this);
+			BtnWidget->SetupOption(Option.NextNodeID, Option.Text, i + 1, this);
 			OptionList->AddChildToVerticalBox(BtnWidget);
 		}
 	}
@@ -195,12 +194,15 @@ void UCRPG_DialogueWidget::ShowOptions(const TArray<FDialogueOption>& Options)
 
 void UCRPG_DialogueWidget::SelectOption(int32 NextNodeID, FText SelectedText)
 {
-	// Oyuncunun seçtiði cevabý da tarihçeye ekle
+	if (!FullText.IsEmpty())
+	{
+		PushToHistory(FullText, false);
+	}
+
 	if (!SelectedText.IsEmpty())
 	{
-		// Format: "YOU: Cevap..."
-		FString PlayerMsg = FString::Printf(TEXT("YOU: %s"), *SelectedText.ToString());
-		PushToHistory(PlayerMsg, true); // true = Oyuncu
+		FString PlayerMsg = FString::Printf(TEXT("YOU: \"%s\""), *SelectedText.ToString());
+		PushToHistory(PlayerMsg, true);
 	}
 
 	ShowNode(NextNodeID);

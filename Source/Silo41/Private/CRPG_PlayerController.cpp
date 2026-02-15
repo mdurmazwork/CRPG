@@ -11,6 +11,7 @@
 #include "CRPG_InteractionComponent.h" 
 #include "CRPG_InteractableActor.h"
 #include "CRPG_CharacterBase.h"
+#include "CRPG_HUD.h" 
 
 ACRPG_PlayerController::ACRPG_PlayerController()
 {
@@ -22,7 +23,6 @@ ACRPG_PlayerController::ACRPG_PlayerController()
 	bIsApproachingTarget = false;
 	CachedTargetActor = nullptr;
 
-	// Mesafe ayarýný biraz cömert yapalým ki takýlmasýn
 	InteractionStoppingDistance = 180.0f;
 }
 
@@ -53,7 +53,6 @@ void ACRPG_PlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Sadece Exploration modunda ve aktif bir yaklaþma emri varsa çalýþ
 	if (bIsApproachingTarget && CachedTargetActor)
 	{
 		CheckInteractionDistance();
@@ -74,6 +73,12 @@ void ACRPG_PlayerController::SetupInputComponent()
 			EnhancedInputComponent->BindAction(HighlightAction, ETriggerEvent::Started, this, &ACRPG_PlayerController::OnHighlightPressed);
 			EnhancedInputComponent->BindAction(HighlightAction, ETriggerEvent::Completed, this, &ACRPG_PlayerController::OnHighlightReleased);
 		}
+
+		if (InventoryAction)
+		{
+			EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &ACRPG_PlayerController::OnInventoryKeyPressed);
+		}
+
 		if (EndTurnAction) EnhancedInputComponent->BindAction(EndTurnAction, ETriggerEvent::Started, this, &ACRPG_PlayerController::OnEndTurnTriggered);
 		if (CameraPanAction) EnhancedInputComponent->BindAction(CameraPanAction, ETriggerEvent::Triggered, this, &ACRPG_PlayerController::OnCameraPan);
 		if (CameraLockAction) EnhancedInputComponent->BindAction(CameraLockAction, ETriggerEvent::Started, this, &ACRPG_PlayerController::OnCameraLock);
@@ -96,6 +101,18 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 {
 	if (bIsMiddleMousePressed) return;
 
+	ACRPG_HUD* SiloHUD = Cast<ACRPG_HUD>(GetHUD());
+
+	// [GÜNCELLEME] HAREKET ENGELLEYÝCÝ
+	// Diyalog VEYA Envanter açýksa, dünyaya týklamayý engelle.
+	if (SiloHUD)
+	{
+		if (SiloHUD->IsDialogueActive() || SiloHUD->IsInventoryActive())
+		{
+			return; // Hareketi iptal et
+		}
+	}
+
 	ACRPG_GameMode* GM = Cast<ACRPG_GameMode>(UGameplayStatics::GetGameMode(this));
 	if (!GM) return;
 
@@ -106,10 +123,8 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 
 	StopInteractionApproach();
 
-	// 1. Önce Visibility (Zemin, Duvar vs.)
 	bHitSuccessful = GetHitResultUnderCursor(ECC_Visibility, true, Hit);
 
-	// 2. Eðer Visibility baþarýsýzsa veya alakasýz bir þeyse, Pawn (Karakter) dene
 	if (!bHitSuccessful || (Hit.GetActor() && !Hit.GetActor()->IsA(ACRPG_InteractableActor::StaticClass()) && !Hit.GetActor()->IsA(ACRPG_CharacterBase::StaticClass())))
 	{
 		FHitResult PawnHit;
@@ -123,7 +138,6 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 	if (!bHitSuccessful || !Hit.GetActor()) return;
 	AActor* HitActor = Hit.GetActor();
 
-	// --- HEDEF ANALÝZÝ ---
 	bool bIsInteractable = false;
 
 	if (ACRPG_InteractableActor* ClickedObj = Cast<ACRPG_InteractableActor>(HitActor))
@@ -135,14 +149,12 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 		if (!ClickedChar->IsPlayerCharacter()) bIsInteractable = true;
 	}
 
-	// Aksiyon Kararý
 	if (bIsInteractable && GM->GetCurrentGameState() == ECRPG_GameState::Exploration)
 	{
 		MoveToInteractable(HitActor);
 		return;
 	}
 
-	// Normal Yürüme
 	if (GM->GetCurrentGameState() == ECRPG_GameState::Exploration)
 	{
 		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Hit.Location);
@@ -160,39 +172,31 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 	}
 }
 
-// --- AKILLI YAKLAÞMA MANTIÐI ---
+void ACRPG_PlayerController::OnInventoryKeyPressed(const FInputActionValue& Value)
+{
+	ACRPG_HUD* SiloHUD = Cast<ACRPG_HUD>(GetHUD());
+	if (SiloHUD)
+	{
+		SiloHUD->ToggleInventory();
+	}
+}
 
+// ... Diðer fonksiyonlar ayný ...
 void ACRPG_PlayerController::MoveToInteractable(AActor* Target)
 {
 	if (!Target || !GetPawn()) return;
-
 	CachedTargetActor = Target;
 	bIsApproachingTarget = true;
-
-	// [ÇÖZÜM]: Hedefin merkezine deðil, "Bize Bakan Yüzeyine" yürü.
-	// Böylece NavMesh deliðinin içine girmeye çalýþmayýz.
-
 	FVector Origin;
 	FVector BoxExtent;
 	Target->GetActorBounds(true, Origin, BoxExtent);
-
-	// Hedefin kabaca yarýçapý (En geniþ kenarý)
 	float TargetRadius = FMath::Max(BoxExtent.X, BoxExtent.Y);
-
-	// Hedefe giden yön
 	FVector MyLoc = GetPawn()->GetActorLocation();
 	FVector TargetLoc = Target->GetActorLocation();
 	FVector DirToTarget = (TargetLoc - MyLoc).GetSafeNormal2D();
-
-	// Durmak istediðimiz nokta:
-	// Merkezden bize doðru [Yarýçap + 60 birim] kadar gel.
-	// Bu nokta NavMesh üzerinde (yürünebilir alanda) olacaktýr.
 	float OffsetDistance = TargetRadius + 70.0f;
 	FVector MovePos = TargetLoc - (DirToTarget * OffsetDistance);
-
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MovePos);
-
-	UE_LOG(LogTemp, Log, TEXT("INTERACTION: Moving to %s (Offset: %f). Target Radius: %f"), *Target->GetName(), OffsetDistance, TargetRadius);
 }
 
 void ACRPG_PlayerController::CheckInteractionDistance()
@@ -202,21 +206,12 @@ void ACRPG_PlayerController::CheckInteractionDistance()
 		StopInteractionApproach();
 		return;
 	}
-
-	// [ÇÖZÜM]: Mesafe kontrolünü de akýllý yapalým.
-	// Büyük objeler için "Merkezden Merkeze" ölçmek hatalý olur.
-	// "Yüzeyden Yüzeye" mantýðýna yakýn bir hesap yapalým.
-
 	float DistToCenter = FVector::Dist(GetPawn()->GetActorLocation(), CachedTargetActor->GetActorLocation());
-
 	FVector Origin;
 	FVector BoxExtent;
 	CachedTargetActor->GetActorBounds(true, Origin, BoxExtent);
 	float TargetRadius = FMath::Max(BoxExtent.X, BoxExtent.Y);
-
-	// Kabul edilebilir mesafe = Ayarlý Limit + Hedefin Büyüklüðü
 	float AcceptableDist = InteractionStoppingDistance + TargetRadius;
-
 	if (DistToCenter <= AcceptableDist)
 	{
 		StopMovement();
@@ -228,7 +223,6 @@ void ACRPG_PlayerController::CheckInteractionDistance()
 void ACRPG_PlayerController::PerformInteraction()
 {
 	if (!CachedTargetActor) return;
-
 	if (ACRPG_InteractableActor* Interactable = Cast<ACRPG_InteractableActor>(CachedTargetActor))
 	{
 		Interactable->OnInteract(GetPawn());
@@ -244,8 +238,6 @@ void ACRPG_PlayerController::StopInteractionApproach()
 	bIsApproachingTarget = false;
 	CachedTargetActor = nullptr;
 }
-
-// ... Input ve Kamera Kodlarý (Deðiþmedi) ...
 
 void ACRPG_PlayerController::OnHighlightPressed(const FInputActionValue& Value)
 {
