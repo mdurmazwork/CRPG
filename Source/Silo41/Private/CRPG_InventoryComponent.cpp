@@ -4,7 +4,7 @@
 UCRPG_InventoryComponent::UCRPG_InventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	Capacity = 70; // 10x7 Grid istediðin için
+	Capacity = 70; // 10x7 Grid istediðin için 
 }
 
 void UCRPG_InventoryComponent::BeginPlay()

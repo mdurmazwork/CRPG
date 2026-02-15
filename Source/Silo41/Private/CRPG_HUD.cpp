@@ -145,7 +145,7 @@ void ACRPG_HUD::ToggleInventory()
 			PC->SetInputMode(InputMode);
 			PC->bShowMouseCursor = true;
 
-			// Karakter Kameraya Dönsün
+			// Karakter Kameraya Dönsün 
 			if (APawn* PlayerPawn = PC->GetPawn())
 			{
 				PC->StopMovement();

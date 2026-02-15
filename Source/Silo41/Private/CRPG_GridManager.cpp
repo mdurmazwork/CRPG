@@ -1,7 +1,7 @@
 #include "CRPG_GridManager.h"
 #include "CRPG_GameMode.h"
 #include "CRPG_CharacterBase.h"
-#include "CRPG_TurnManager.h" // Eklendi
+#include "CRPG_TurnManager.h" // Eklendi 
 #include "Kismet/GameplayStatics.h"
 
 ACRPG_GridManager::ACRPG_GridManager()

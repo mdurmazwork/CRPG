@@ -10,7 +10,7 @@ ACRPG_AIController::ACRPG_AIController()
 	bIsCombatActive = false;
 	CurrentTarget = nullptr;
 
-	// 1. Algý Bileþenini Oluþtur
+	// 1. Algý Bileþenini Oluþtur 
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	SetPerceptionComponent(*AIPerception);
 

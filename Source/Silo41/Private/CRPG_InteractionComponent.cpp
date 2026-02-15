@@ -1,6 +1,6 @@
 #include "CRPG_InteractionComponent.h"
 #include "CRPG_InteractableActor.h"
-#include "CRPG_CharacterBase.h" // Karakterleri de tanýmalýyýz
+#include "CRPG_CharacterBase.h" // Karakterleri de tanýmalýyýz 
 #include "GameFramework/Actor.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"

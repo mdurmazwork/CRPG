@@ -27,7 +27,7 @@ void ACRPG_TurnManager::StartCombat(const TArray<ACRPG_CharacterBase*>& Combatan
 	CurrentTurnIndex = -1;
 	RoundCount = 1;
 
-	// Basit Sýralama: Oyuncuyu her zaman listenin baþýna al (Debug kolaylýðý için)
+	// Basit Sýralama: Oyuncuyu her zaman listenin baþýna al (Debug kolaylýðý için) 
 	// Ýleride burayý "Initiative Stat"ýna göre BubbleSort yapacaðýz.
 	InitiativeOrder.Sort([](const ACRPG_CharacterBase& A, const ACRPG_CharacterBase& B) {
 		return A.IsPlayerCharacter(); // Player true ise baþa gelir.

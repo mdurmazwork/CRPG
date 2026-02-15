@@ -41,7 +41,7 @@ void ACRPG_GameMode::HandleCombatStart()
 {
 	UE_LOG(LogTemp, Log, TEXT("SILO-41 SYSTEM: Switched to COMBAT Mode."));
 
-	// 1. Oyuncunun hareketini durdur (Mouse ile týklanan yere gitmeyi iptal et)
+	// 1. Oyuncunun hareketini durdur (Mouse ile týklanan yere gitmeyi iptal et) 
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (PC)
 	{

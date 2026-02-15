@@ -6,7 +6,7 @@
 #include "CRPG_AttributeComponent.h"
 
 // ============================================================================
-// IMPLEMENTATION: ITEM SLOT
+// IMPLEMENTATION: ITEM SLOT 
 // ============================================================================
 
 void UCRPG_ItemSlot::NativeConstruct()

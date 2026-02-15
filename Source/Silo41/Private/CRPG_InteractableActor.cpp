@@ -2,7 +2,7 @@
 #include "Components/PrimitiveComponent.h"
 #include "CRPG_CharacterBase.h"       
 #include "CRPG_InventoryComponent.h"  
-#include "CRPG_LootComponent.h" // YENÝ: Loot Component Eriþimi
+#include "CRPG_LootComponent.h" // YENÝ: Loot Component Eriþimi 
 
 ACRPG_InteractableActor::ACRPG_InteractableActor()
 {

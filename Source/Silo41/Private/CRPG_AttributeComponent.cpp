@@ -41,7 +41,7 @@ void UCRPG_AttributeComponent::ApplyHealthChange(float Delta)
 		if (CurrentHealth <= 0.0f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ATTRIBUTE: Character DIED!"));
-			// TODO: Death Logic here
+			// TODO: Death Logic here 
 		}
 	}
 }

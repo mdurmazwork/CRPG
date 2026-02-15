@@ -104,7 +104,7 @@ void ACRPG_PlayerController::OnClickTriggered(const FInputActionValue& Value)
 	ACRPG_HUD* SiloHUD = Cast<ACRPG_HUD>(GetHUD());
 
 	// [GÜNCELLEME] HAREKET ENGELLEYÝCÝ
-	// Diyalog VEYA Envanter açýksa, dünyaya týklamayý engelle.
+	// Diyalog VEYA Envanter açýksa, dünyaya týklamayý engelle. 
 	if (SiloHUD)
 	{
 		if (SiloHUD->IsDialogueActive() || SiloHUD->IsInventoryActive())

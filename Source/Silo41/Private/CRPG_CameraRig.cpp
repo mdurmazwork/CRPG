@@ -58,7 +58,7 @@ void ACRPG_CameraRig::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// --- HEDEF POZÝSYON HESABI ---
+	// --- HEDEF POZÝSYON HESABI  ---
 
 	// 1. Diyalog Modu
 	if (bIsDialogueActive && TargetActor && DialogueNPC)

@@ -5,7 +5,7 @@
 
 ACRPG_WorldPartitionManager::ACRPG_WorldPartitionManager()
 {
-	PrimaryActorTick.bCanEverTick = false; // Tick yerine Timer kullanýyoruz (Performans)
+	PrimaryActorTick.bCanEverTick = false; // Tick yerine Timer kullanýyoruz (Performans) 
 
 	SectorSize = 5000.0f; // 50 metrelik kareler
 	CurrentSector = FIntPoint(0, 0);

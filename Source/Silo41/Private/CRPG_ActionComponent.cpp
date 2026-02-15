@@ -14,7 +14,7 @@ void UCRPG_ActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Baþlangýçta AP tam olsun
+	// Baþlangýçta AP tam olsun 
 	ResetActionPoints();
 }
 

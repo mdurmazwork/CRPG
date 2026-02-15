@@ -29,7 +29,7 @@ TArray<FLootResult> UCRPG_LootComponent::RollLoot()
 	{
 		if (!Rule.ItemData) continue;
 
-		// 1. Zar At (0.0 ile 1.0 arasý rastgele sayý)
+		// 1. Zar At (0.0 ile 1.0 arasý rastgele sayý) 
 		float Roll = FMath::FRand();
 
 		// 2. Þans Kontrolü

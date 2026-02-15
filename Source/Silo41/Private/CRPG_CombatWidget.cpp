@@ -18,7 +18,7 @@ void UCRPG_CombatWidget::InitializeCombatHUD(UCRPG_ActionComponent* ActionComp)
 
 	LinkedActionComp = ActionComp;
 
-	// 1. AP Güncelleme Delegate'ini baðla
+	// 1. AP Güncelleme Delegate'ini baðla 
 	LinkedActionComp->OnActionPointsChanged.RemoveDynamic(this, &UCRPG_CombatWidget::UpdateAP);
 	LinkedActionComp->OnActionPointsChanged.AddDynamic(this, &UCRPG_CombatWidget::UpdateAP);
 

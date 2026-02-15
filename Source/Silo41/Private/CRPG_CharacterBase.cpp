@@ -19,7 +19,7 @@ ACRPG_CharacterBase::ACRPG_CharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Attribute Component
+	// Attribute Component 
 	AttributeComp = CreateDefaultSubobject<UCRPG_AttributeComponent>(TEXT("AttributeComp"));
 
 	// Inventory Component
